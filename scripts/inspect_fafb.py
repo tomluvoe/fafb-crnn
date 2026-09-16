@@ -53,61 +53,34 @@ def main():
     print(f"Cell-type annotations:    {len(cell_types):,}")
     print(f"Visual neurons:           {len(visual_neurons):,}")
     print(f"Visual column neurons:    {len(visual_columns):,}")
-    print(
-        f"Visual columns:           "
-        f"{visual_columns['column_id'].nunique():,}"
-    )
+    print(f"Visual columns:           {visual_columns['column_id'].nunique():,}")
     print(f"Connection rows:          {len(connections):,}")
 
     unique_pairs = (
-        connections[
-            ["pre_root_id", "post_root_id"]
-        ]
-        .drop_duplicates()
-        .shape[0]
+        connections[["pre_root_id", "post_root_id"]].drop_duplicates().shape[0]
     )
 
     print(f"Unique neuron pairs:      {unique_pairs:,}")
 
     print()
     print("Visual column cell types:")
-    print(
-        visual_columns["type"]
-        .value_counts()
-        .to_string()
-    )
+    print(visual_columns["type"].value_counts().to_string())
 
     print()
     print("Visual neuron subsystems:")
-    print(
-        visual_neurons["subsystem"]
-        .value_counts(dropna=False)
-        .to_string()
-    )
+    print(visual_neurons["subsystem"].value_counts(dropna=False).to_string())
 
     print()
     print("Classification super classes:")
-    print(
-        classification["super_class"]
-        .value_counts(dropna=False)
-        .to_string()
-    )
+    print(classification["super_class"].value_counts(dropna=False).to_string())
 
     print()
     print("Classification classes:")
-    print(
-        classification["class"]
-        .value_counts(dropna=False)
-        .to_string()
-    )
+    print(classification["class"].value_counts(dropna=False).to_string())
 
     print()
     print("Neurotransmitter types:")
-    print(
-        neurons["nt_type"]
-        .value_counts(dropna=False)
-        .to_string()
-    )
+    print(neurons["nt_type"].value_counts(dropna=False).to_string())
 
 
 if __name__ == "__main__":
