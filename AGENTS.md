@@ -46,6 +46,7 @@ Do:
 - use `argparse` for scripts that need options
 - keep reusable logic under `src/`
 - keep executable entry points under `scripts/`
+- put every data-processing and table-inspection step in `scripts/` so it can be rerun
 - write deterministic preprocessing
 - add assertions and sanity checks
 - save expensive processed graph artifacts for reuse
@@ -56,6 +57,7 @@ Do:
 Do not:
 
 - add Jupyter notebooks
+- leave processing in chat snippets, notebooks, or one-off `python -c` commands
 - use dense 139k × 139k adjacency matrices
 - put unrelated helpers into a generic `utils.py`
 - reload and reprocess the full connectivity CSV during every training run
@@ -91,7 +93,10 @@ fafb-crnn/
 ├── scripts/
 │   ├── inspect_fafb.py
 │   ├── inspect_visual_system.py
+│   ├── inspect_descending.py
+│   ├── inspect_connections.py
 │   ├── build_graph.py
+│   ├── inspect_graph.py
 │   ├── inspect_reachability.py
 │   └── train_classifier.py
 │
