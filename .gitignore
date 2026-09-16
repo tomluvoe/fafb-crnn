@@ -4,6 +4,8 @@ data/fafb/processed/*
 data/animals10/raw/*
 data/animals10/processed/*
 
+uv.lock
+
 # Training outputs
 outputs/
 
