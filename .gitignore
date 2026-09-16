@@ -1,3 +1,17 @@
+# FAFB / datasets
+data/fafb/raw/*
+data/fafb/processed/*
+data/animals10/raw/*
+data/animals10/processed/*
+
+# Training outputs
+outputs/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
