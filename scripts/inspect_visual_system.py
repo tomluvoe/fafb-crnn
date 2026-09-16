@@ -13,9 +13,9 @@ of fly phototransduction. R1-R6 exist in the annotations but have no
 column map in this dataset, so they are not v0 injection targets.
 """
 
+from connectome.populations import V0_VISUAL_INPUT_TYPES
 from data.fafb import load_classification, load_visual_columns, load_visual_neurons
 
-V0_INPUT_TYPES = ("L1", "L2", "L3")
 PHOTORECEPTOR_TYPES = ("R1-6", "R7", "R8")
 LAMINA_MONOPOLAR_TYPES = ("L1", "L2", "L3", "L4", "L5")
 
@@ -102,7 +102,7 @@ def print_lamina(visual_neurons, visual_columns, classification) -> None:
 
     print()
     print("L1 / L2 / L3 annotations (v0 injection types):")
-    lamina = visual_neurons[visual_neurons["type"].isin(V0_INPUT_TYPES)]
+    lamina = visual_neurons[visual_neurons["type"].isin(V0_VISUAL_INPUT_TYPES)]
     print(
         lamina.groupby(["type", "family", "subsystem", "category", "side"])
         .size()
@@ -111,7 +111,7 @@ def print_lamina(visual_neurons, visual_columns, classification) -> None:
 
     print()
     print("Classification of column-assigned L1 / L2 / L3:")
-    mapped = visual_columns[visual_columns["type"].isin(V0_INPUT_TYPES)]
+    mapped = visual_columns[visual_columns["type"].isin(V0_VISUAL_INPUT_TYPES)]
     mapped_class = classification.merge(
         mapped[["root_id", "type"]],
         on="root_id",
@@ -161,7 +161,7 @@ def print_column_completeness(visual_columns) -> None:
         print()
         print(f"{hemisphere} hemisphere: {len(column_ids):,} columns")
         print(f"  {'type':<8}{'present':>10}{'missing':>10}")
-        for cell_type in (*V0_INPUT_TYPES, "R7", "R8"):
+        for cell_type in (*V0_VISUAL_INPUT_TYPES, "R7", "R8"):
             present = set(hemi.loc[hemi["type"] == cell_type, "column_id"])
             print(
                 f"  {cell_type:<8}{len(present):>10,}{len(column_ids - present):>10,}"
@@ -178,7 +178,7 @@ def print_v0_inputs(visual_columns) -> None:
     print("This mapping is an engineering approximation.")
     print()
 
-    inputs = visual_columns[visual_columns["type"].isin(V0_INPUT_TYPES)]
+    inputs = visual_columns[visual_columns["type"].isin(V0_VISUAL_INPUT_TYPES)]
     print(f"Column-assigned L1/L2/L3 neurons: {len(inputs):,}")
     print()
     print(inputs.groupby(["type", "hemisphere"]).size().to_string())

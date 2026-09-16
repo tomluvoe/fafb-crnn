@@ -13,5 +13,7 @@ jobs:
       - uses: astral-sh/setup-uv@v10.1.0
       - name: Lint
         run: |
-          uv run ruff check src scripts
-          uv run ruff format --check src scripts
+          uv run ruff check src scripts tests
+          uv run ruff format --check src scripts tests
+      - name: Test
+        run: uv run pytest

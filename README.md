@@ -45,35 +45,48 @@ Raw FlyWire tables live in `data/fafb/raw/` and are not committed:
 
 ## Scripts
 
+Raw FlyWire tables go in `data/fafb/raw/` (not in git). Every inspect
+and preprocess step is a script; re-run them at any time. `build_graph.py`
+is the only writer.
+
 ```bash
 uv run python scripts/inspect_fafb.py
 uv run python scripts/inspect_visual_system.py
+uv run python scripts/inspect_descending.py
+uv run python scripts/inspect_connections.py
+uv run python scripts/build_graph.py
+uv run python scripts/inspect_graph.py
 ```
 
 `uv run` creates `.venv` and installs this package if needed. System
 `python3` does not see `src/`.
 
-`inspect_fafb.py` is a first pass over every table.
-`inspect_visual_system.py` looks at photoreceptors, lamina neurons,
-retinotopy, and which cells are usable as CRNN visual inputs.
+| script | what it does |
+|---|---|
+| `inspect_fafb.py` | first pass over every raw table |
+| `inspect_visual_system.py` | photoreceptors, L1/L2/L3, retinotopy |
+| `inspect_descending.py` | v0 readout: `super_class == descending` |
+| `inspect_connections.py` | pair aggregation, isolated cells, `syn_count` |
+| `build_graph.py` | writes `data/fafb/processed/` (deterministic) |
+| `inspect_graph.py` | checks the processed artifacts without re-parsing CSV |
 
-## Lint
+## Lint and tests
 
-PRs run [Ruff](https://docs.astral.sh/ruff/) in GitHub Actions. Locally:
+PRs run [Ruff](https://docs.astral.sh/ruff/) and pytest in GitHub
+Actions. Locally:
 
 ```bash
-uv run ruff check src scripts
-uv run ruff format --check src scripts
+uv run ruff check src scripts tests
+uv run ruff format --check src scripts tests
+uv run pytest
 ```
 
-This does not load FAFB data. Inspect scripts are not unit-tested in CI
-because the `.csv.gz` files are local-only. Graph index tests can be
-added later against tiny synthetic graphs.
+Inspect scripts are not unit-tested in CI because the `.csv.gz` files
+are local-only. Graph index tests use tiny synthetic graphs.
 
 ## Status
 
-Phase 0: inspect the connectome and visual annotations before building
-the graph or the model.
+Phase 1: deterministic `root_id → index` mapping and saved sparse graph.
 
 ## Interpretation
 
