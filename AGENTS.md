@@ -99,6 +99,8 @@ fafb-crnn/
 │   ├── build_graph.py
 │   ├── inspect_graph.py
 │   ├── inspect_reachability.py
+│   ├── inspect_encoder.py
+│   ├── encode_image.py
 │   └── train_classifier.py
 │
 ├── tests/
@@ -492,9 +494,9 @@ is the implementation contract (constraints, data, what not to do).
 Do not duplicate the issue list here. Open issues at
 https://github.com/tomluvoe/fafb-crnn/issues
 
-Closed: Phase 0 (#5), Phase 1 (#6), Phase 2 (#7).
-Next: Phase 3 visual encoder (#8). Related: Animals-10 (#12), L1/L2
-ON/OFF encoding (#13).
+Closed: Phase 0 (#5), Phase 1 (#6), Phase 2 (#7), Phase 3 (#8).
+Next: Phase 4 CRNN (#9). Related: Animals-10 (#12), L1/L2 ON/OFF
+encoding (#13; v0 default is spatial contrast).
 
 ## Remaining implementation constraints
 
@@ -549,8 +551,8 @@ contributes beyond generic sparse recurrence.
 
 ## Immediate priorities for coding agents
 
-Follow open GitHub issues, starting with Phase 3 (#8). Do not redo
-closed Phase 0–2 inspect/graph work unless those scripts are broken.
+Follow open GitHub issues, starting with Phase 4 (#9). Do not redo
+closed Phase 0–3 work unless those scripts are broken.
 
 Do not guess biological labels. Query the actual CSV contents first.
 
