@@ -48,6 +48,7 @@ Do:
 - keep executable entry points under `scripts/`
 - put every data-processing and table-inspection step in `scripts/` so it can be rerun
 - write deterministic preprocessing
+- track *what to do next* in GitHub issues; keep *how to build it* in this file
 - add assertions and sanity checks
 - save expensive processed graph artifacts for reuse
 - use type hints where useful
@@ -483,94 +484,49 @@ This asks whether animal category is linearly decodable from the representation 
 
 ---
 
-## Roadmap
+## Work tracking
 
-### Phase 0 — inspect data
+GitHub issues are the roadmap (what is next / what is done). This file
+is the implementation contract (constraints, data, what not to do).
 
-Priority scripts:
+Do not duplicate the issue list here. Open issues at
+https://github.com/tomluvoe/fafb-crnn/issues
 
-```text
-scripts/inspect_fafb.py
-scripts/inspect_visual_system.py
-```
+Closed: Phase 0 (#5), Phase 1 (#6), Phase 2 (#7).
+Next: Phase 3 visual encoder (#8). Related: Animals-10 (#12), L1/L2
+ON/OFF encoding (#13).
 
-Verify:
+## Remaining implementation constraints
 
-- row counts
-- columns
-- visual types
-- R1-R8 annotations
-- classification values
-- descending-neuron labels
-- neurotransmitter categories
+These stay in-tree so agents do not need GitHub to implement correctly.
 
-### Phase 1 — build graph
+### Visual encoder
 
-Create a deterministic mapping:
+Sample images at FAFB retinotopic coordinates and inject approximate
+ON / OFF / intensity into L1 / L2 / L3. Engineering stand-in, not
+phototransduction. Keep a generic encoder interface so a later R1-R6
+model can replace it.
 
-```text
-FlyWire root_id -> [0 ... N-1]
-```
+### CRNN
 
-Save processed graph artifacts such as:
+Sparse recurrent propagation in PyTorch. Prefer sparse / edge-based
+ops. Never construct a dense 139k × 139k matrix.
 
-```text
-data/fafb/processed/
-    neuron_ids.npy
-    pre_indices.pt
-    post_indices.pt
-    synapse_counts.pt
-    visual_input_indices.pt
-    descending_indices.pt
-    retinotopic_map.parquet
-```
-
-Do not parse the large connectivity CSV on every training run.
-
-### Phase 2 — reachability
-
-Before model training:
-
-1. identify candidate visual-input neurons
-2. identify candidate descending neurons
-3. compute directed reachability from visual inputs
-4. measure how many graph hops are required to reach descending neurons
-5. inspect which neuropils are traversed
-6. verify there are no obvious graph/indexing errors
-
-Use this to choose a reasonable number of recurrent steps.
-
-### Phase 3 — visual encoder
-
-Implement image sampling using the FAFB retinotopic coordinates and a simple L1/L2/L3 injection strategy.
-
-### Phase 4 — CRNN
-
-Implement sparse recurrent propagation in PyTorch.
-
-Prefer sparse tensors / edge-based operations. Never construct a dense 139k × 139k matrix.
-
-Initial version:
+v0:
 
 - fixed FAFB topology
-- synapse-count-derived weights
+- synapse-count-derived weights (`log1p` as proxy)
 - simple rate dynamics
-- no trainable internal weights initially
+- no trainable internal weights
+- 5 recurrent steps (max hops from visual inputs to reachable DNs)
 
-### Phase 5 — classification
+### Classification
 
-Train a small decoder on top of a frozen FAFB network.
+Train a small decoder on a frozen FAFB network first. Optionally later:
+shared gains by cell type, limited trainable edge gains, strong
+regularization, still-fixed topology.
 
-Then optionally experiment with:
-
-- shared gains by cell type
-- limited trainable edge gains
-- strong regularization
-- fixed topology
-
-### Phase 6 — controls
-
-Important controls include:
+### Controls
 
 ```text
 raw sampled visual input -> linear classifier
@@ -583,35 +539,18 @@ trainable FAFB CRNN
 small conventional CNN baseline
 ```
 
-A degree-preserving shuffled FAFB network is especially important. Preserve as much as practical of:
-
-```text
-input degree
-output degree
-weight distribution
-possibly cell-type / neurotransmitter statistics
-```
-
-while randomizing exact connectivity.
-
-The purpose is to test whether the exact FAFB wiring contributes beyond generic sparse recurrence.
+A degree-preserving shuffled FAFB network is especially important.
+Preserve as much as practical of in/out degree, weight distribution,
+and possibly cell-type / transmitter stats, while randomizing exact
+who-connects-to-whom. The point is whether exact FAFB wiring
+contributes beyond generic sparse recurrence.
 
 ---
 
 ## Immediate priorities for coding agents
 
-Before writing substantial model code:
-
-1. inspect the current repository and existing files
-2. verify `scripts/inspect_fafb.py`
-3. create or improve `scripts/inspect_visual_system.py`
-4. inspect R1-R8 annotations in `visual_neuron_types.csv.gz`
-5. identify descending-neuron labels from the actual classification data
-6. compute unique neuron-pair connectivity
-7. build a deterministic root-ID-to-index mapping
-8. implement directed reachability from candidate visual inputs to descending neurons
-9. add tests for index and graph consistency
-10. only then begin CRNN implementation
+Follow open GitHub issues, starting with Phase 3 (#8). Do not redo
+closed Phase 0–2 inspect/graph work unless those scripts are broken.
 
 Do not guess biological labels. Query the actual CSV contents first.
 

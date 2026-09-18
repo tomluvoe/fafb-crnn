@@ -89,7 +89,8 @@ are local-only. Graph index tests use tiny synthetic graphs.
 
 ## Status
 
-Phase 2: directed reachability from visual inputs to descending neurons.
+Roadmap is GitHub issues. Phases 0–2 are done. Next is
+[Phase 3: visual encoder](https://github.com/tomluvoe/fafb-crnn/issues/8).
 
 ## Interpretation
 
