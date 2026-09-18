@@ -10,10 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: astral-sh/ruff-action@v4.1.0
+        with:
+          args: "check src scripts tests"
+      - uses: astral-sh/ruff-action@v4.1.0
+        with:
+          args: "format --check src scripts tests"
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v10.1.0
-      - name: Lint
-        run: |
-          uv run ruff check src scripts tests
-          uv run ruff format --check src scripts tests
       - name: Test
         run: uv run pytest
