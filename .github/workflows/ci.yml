@@ -10,12 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: astral-sh/ruff-action@v4.1.0
+      - uses: astral-sh/setup-uv@v10.1.0
         with:
-          args: "check src scripts tests"
-      - uses: astral-sh/ruff-action@v4.1.0
-        with:
-          args: "format --check src scripts tests"
+          enable-cache: false
+      - name: Lint
+        run: |
+          uvx ruff check src scripts tests
+          uvx ruff format --check src scripts tests
 
   test:
     runs-on: ubuntu-latest
