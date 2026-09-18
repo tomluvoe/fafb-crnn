@@ -6,6 +6,8 @@ property of this model, not evidence that flies classify animals.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
@@ -39,6 +41,23 @@ def standardize_features(
     return (train_features - mean) / std, (val_features - mean) / std, mean, std
 
 
+def apply_standardize(
+    features: torch.Tensor, mean: torch.Tensor, std: torch.Tensor
+) -> torch.Tensor:
+    return (features - mean) / std
+
+
+@dataclass
+class TrainResult:
+    decoder: LinearDecoder
+    last_state_dict: dict[str, torch.Tensor]
+    history: dict[str, list[float]]
+    best_epoch: int
+    best_val_acc: float
+    feature_mean: torch.Tensor
+    feature_std: torch.Tensor
+
+
 def train_linear_decoder(
     train_features: torch.Tensor,
     train_labels: torch.Tensor,
@@ -52,13 +71,19 @@ def train_linear_decoder(
     seed: int = 0,
     standardize: bool = True,
     device: torch.device | str | None = None,
-) -> tuple[LinearDecoder, dict[str, list[float]]]:
-    """Fit a linear classifier on cached descending features."""
+) -> TrainResult:
+    """Fit a linear classifier on cached descending features.
+
+    The returned decoder holds the best-val weights, not the last epoch.
+    """
     torch.manual_seed(seed)
     if standardize:
-        train_features, val_features, _, _ = standardize_features(
+        train_features, val_features, mean, std = standardize_features(
             train_features, val_features
         )
+    else:
+        mean = train_features.new_zeros(train_features.shape[1])
+        std = train_features.new_ones(train_features.shape[1])
     if device is not None:
         train_features = train_features.to(device)
         val_features = val_features.to(device)
@@ -76,8 +101,11 @@ def train_linear_decoder(
         shuffle=True,
     )
     history: dict[str, list[float]] = {"train_acc": [], "val_acc": []}
+    best_val = -1.0
+    best_epoch = 1
+    best_state = {k: v.detach().cpu().clone() for k, v in decoder.state_dict().items()}
     decoder.train()
-    for _ in range(epochs):
+    for epoch in range(1, epochs + 1):
         for batch_x, batch_y in loader:
             opt.zero_grad(set_to_none=True)
             loss = loss_fn(decoder(batch_x), batch_y)
@@ -89,6 +117,22 @@ def train_linear_decoder(
             val_acc = accuracy(decoder(val_features), val_labels.long())
         history["train_acc"].append(train_acc)
         history["val_acc"].append(val_acc)
+        if val_acc > best_val:
+            best_val = val_acc
+            best_epoch = epoch
+            best_state = {
+                k: v.detach().cpu().clone() for k, v in decoder.state_dict().items()
+            }
         decoder.train()
+    last_state = {k: v.detach().cpu().clone() for k, v in decoder.state_dict().items()}
+    decoder.load_state_dict(best_state)
     decoder.eval()
-    return decoder, history
+    return TrainResult(
+        decoder=decoder,
+        last_state_dict=last_state,
+        history=history,
+        best_epoch=best_epoch,
+        best_val_acc=best_val,
+        feature_mean=mean.detach().cpu(),
+        feature_std=std.detach().cpu(),
+    )

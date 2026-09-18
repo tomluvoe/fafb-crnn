@@ -20,9 +20,15 @@ from data.animals10 import V0_CLASSES
 from data.dataset import Animals10Dataset
 from data.fafb import REPO_ROOT
 from models.crnn import SparseFAFBCRNN
-from models.decoder import train_linear_decoder
+from models.decoder import apply_standardize, train_linear_decoder
 from models.device import resolve_device
 from models.features import extract_descending_features
+from models.metrics import (
+    evaluate_decoder,
+    majority_class_index,
+    metrics_to_dict,
+    print_split_metrics,
+)
 from vision.encoder import ColumnL123Encoder
 
 OUTPUT_DIR = REPO_ROOT / "outputs"
@@ -100,7 +106,7 @@ def main() -> None:
     )
     print("Z-scoring features on the train split before the linear layer.")
 
-    decoder, history = train_linear_decoder(
+    result = train_linear_decoder(
         train_x,
         train_y,
         val_x,
@@ -111,16 +117,24 @@ def main() -> None:
         seed=args.seed,
         device=device,
     )
-    train_acc = history["train_acc"][-1]
-    val_acc = history["val_acc"][-1]
+    class_names = train_set.class_names
+    decoder = result.decoder.to("cpu")
+    train_z = apply_standardize(train_x, result.feature_mean, result.feature_std)
+    val_z = apply_standardize(val_x, result.feature_mean, result.feature_std)
+    majority = majority_class_index(train_y)
+    train_metrics = evaluate_decoder(decoder, train_z, train_y, class_names, majority)
+    val_metrics = evaluate_decoder(decoder, val_z, val_y, class_names, majority)
+
     print()
     print("=" * 80)
-    print("Linear decoder on frozen FAFB CRNN")
+    print("Linear decoder on frozen FAFB CRNN (best val epoch)")
     print("=" * 80)
-    print(f"Classes:     {list(train_set.class_names)}")
-    print(f"Chance:      {chance:.3f}")
-    print(f"Train acc:   {train_acc:.3f}")
-    print(f"Val acc:     {val_acc:.3f}")
+    print(f"Classes:     {list(class_names)}")
+    print(f"Best epoch:  {result.best_epoch} / {args.epochs}")
+    print_split_metrics("Train", train_metrics, class_names)
+    print()
+    print_split_metrics("Val", val_metrics, class_names)
+    print()
     print(
         "Do not interpret this as fly object recognition. "
         "Phase 6 controls are required before claiming the wiring matters."
@@ -128,30 +142,51 @@ def main() -> None:
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     checkpoint = args.output_dir / "decoder.pt"
+    last_path = args.output_dir / "decoder_last.pt"
+    features_path = args.output_dir / "features.pt"
     metrics_path = args.output_dir / "metrics.json"
+    payload = {
+        "state_dict": decoder.state_dict(),
+        "class_names": class_names,
+        "n_features": int(train_x.shape[1]),
+        "best_epoch": result.best_epoch,
+        "best_val_acc": result.best_val_acc,
+        "feature_mean": result.feature_mean,
+        "feature_std": result.feature_std,
+    }
+    torch.save(payload, checkpoint)
+    torch.save({**payload, "state_dict": result.last_state_dict}, last_path)
     torch.save(
         {
-            "state_dict": decoder.state_dict(),
-            "class_names": train_set.class_names,
-            "n_features": int(train_x.shape[1]),
+            "train_features": train_x.cpu(),
+            "train_labels": train_y.cpu(),
+            "val_features": val_x.cpu(),
+            "val_labels": val_y.cpu(),
+            "feature_mean": result.feature_mean,
+            "feature_std": result.feature_std,
+            "class_names": class_names,
         },
-        checkpoint,
+        features_path,
     )
     metrics_path.write_text(
         json.dumps(
             {
-                "classes": list(train_set.class_names),
+                "classes": list(class_names),
                 "chance": chance,
-                "train_acc": train_acc,
-                "val_acc": val_acc,
-                "history": history,
+                "best_epoch": result.best_epoch,
+                "best_val_acc": result.best_val_acc,
+                "history": result.history,
+                "train": metrics_to_dict(train_metrics),
+                "val": metrics_to_dict(val_metrics),
                 "note": "Model accuracy, not biological fly behavior.",
             },
             indent=2,
         )
         + "\n"
     )
-    print(f"Wrote {checkpoint} and {metrics_path}")
+    print(f"Wrote {checkpoint} (best), {last_path} (last epoch),")
+    print(f"      {features_path} and {metrics_path}")
+    print("Re-score later without the CRNN: uv run python scripts/eval_classifier.py")
 
 
 if __name__ == "__main__":

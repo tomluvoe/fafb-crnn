@@ -103,7 +103,8 @@ fafb-crnn/
 │   ├── encode_image.py
 │   ├── inspect_crnn.py
 │   ├── inspect_animals10.py
-│   └── train_classifier.py
+│   ├── train_classifier.py
+│   └── eval_classifier.py
 │
 ├── tests/
 │
