@@ -165,6 +165,18 @@ class ColumnL123Encoder:
         path = Path(processed_dir) / "retinotopic_map.parquet"
         return cls(pd.read_parquet(path), **kwargs)
 
+    def to(self, device: torch.device | str) -> ColumnL123Encoder:
+        """Move sampling buffers so encode() can run on MPS/CPU."""
+        self.neuron_index = self.neuron_index.to(device)
+        self._unique_x = self._unique_x.to(device)
+        self._unique_y = self._unique_y.to(device)
+        self._row_to_unique = self._row_to_unique.to(device)
+        self._neighbors = self._neighbors.to(device)
+        self._is_l1 = self._is_l1.to(device)
+        self._is_l2 = self._is_l2.to(device)
+        self._is_l3 = self._is_l3.to(device)
+        return self
+
     def encode(self, image: torch.Tensor) -> torch.Tensor:
         """Return (B, n_visual) in retinotopic_map row order."""
         batched = as_batched_image(image)

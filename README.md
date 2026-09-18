@@ -59,6 +59,8 @@ uv run python scripts/inspect_graph.py
 uv run python scripts/inspect_reachability.py
 uv run python scripts/inspect_encoder.py
 uv run python scripts/inspect_crnn.py
+uv run python scripts/inspect_animals10.py
+uv run python scripts/train_classifier.py
 ```
 
 `uv run` creates `.venv` and installs this package if needed. System
@@ -76,6 +78,8 @@ uv run python scripts/inspect_crnn.py
 | `inspect_encoder.py` | sample a synthetic image onto L1/L2/L3 |
 | `encode_image.py` | sample a photo onto L1/L2/L3 (`--delta spatial\|gray`) |
 | `inspect_crnn.py` | 5 frozen sparse rate steps on a synthetic image |
+| `inspect_animals10.py` | local Animals-10 class counts (not in git) |
+| `train_classifier.py` | linear decoder on frozen descending activity |
 
 ## Lint and tests
 
@@ -95,7 +99,7 @@ are local-only. Graph index tests use tiny synthetic graphs.
 ## Status
 
 Roadmap is GitHub issues. Next is
-[Phase 5: linear decoder](https://github.com/tomluvoe/fafb-crnn/issues/10).
+[Phase 6: controls](https://github.com/tomluvoe/fafb-crnn/issues/11).
 
 ## Interpretation
 

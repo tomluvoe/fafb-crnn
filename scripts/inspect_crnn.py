@@ -15,6 +15,7 @@ import torch
 
 from connectome.graph import PROCESSED_DIR
 from models.crnn import V0_LEAK, V0_STEPS, SparseFAFBCRNN
+from models.device import resolve_device
 from vision.encoder import ColumnL123Encoder
 
 
@@ -35,6 +36,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Use raw log1p(syn_count) without incoming-sum normalization",
     )
+    parser.add_argument(
+        "--device",
+        default="auto",
+        help="auto (MPS on Apple silicon), mps, cuda, or cpu",
+    )
     return parser.parse_args()
 
 
@@ -46,14 +52,16 @@ def _horizontal_ramp(height: int = 64, width: int = 64) -> torch.Tensor:
 def main() -> None:
     args = parse_args()
     print(f"Loading processed graph from {args.input_dir}...")
-    encoder = ColumnL123Encoder.from_processed_dir(args.input_dir)
+    device = resolve_device(args.device)
+    print(f"Device: {device}")
+    encoder = ColumnL123Encoder.from_processed_dir(args.input_dir).to(device)
     net = SparseFAFBCRNN.from_processed_dir(
         args.input_dir,
         leak=args.leak,
         steps=args.steps,
         normalize=not args.no_normalize,
-    )
-    visual = encoder.encode(_horizontal_ramp())
+    ).to(device)
+    visual = encoder.encode(_horizontal_ramp().to(device))
     print(
         f"N={net.n_neurons:,} edges={int(net.pre.numel()):,} "
         f"steps={net.steps} leak={net.leak} normalize={net.normalize}"
