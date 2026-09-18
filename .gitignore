@@ -3,6 +3,9 @@ data/fafb/raw/*
 data/fafb/processed/*
 data/animals10/raw/*
 data/animals10/processed/*
+data/animals10/raw-img/
+data/animals10/archive.zip
+data/animals10/translate.py
 
 uv.lock
 
