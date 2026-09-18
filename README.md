@@ -46,8 +46,8 @@ Raw FlyWire tables live in `data/fafb/raw/` and are not committed:
 ## Scripts
 
 Raw FlyWire tables go in `data/fafb/raw/` (not in git). Every inspect
-and preprocess step is a script; re-run them at any time. `build_graph.py`
-is the only writer.
+and preprocess step is a script; re-run them at any time. `build_graph.py` writes the graph; `inspect_reachability.py` writes hop
+maps beside it.
 
 ```bash
 uv run python scripts/inspect_fafb.py
@@ -56,6 +56,7 @@ uv run python scripts/inspect_descending.py
 uv run python scripts/inspect_connections.py
 uv run python scripts/build_graph.py
 uv run python scripts/inspect_graph.py
+uv run python scripts/inspect_reachability.py
 ```
 
 `uv run` creates `.venv` and installs this package if needed. System
@@ -69,6 +70,7 @@ uv run python scripts/inspect_graph.py
 | `inspect_connections.py` | pair aggregation, isolated cells, `syn_count` |
 | `build_graph.py` | writes `data/fafb/processed/` (deterministic) |
 | `inspect_graph.py` | checks the processed artifacts without re-parsing CSV |
+| `inspect_reachability.py` | hops from L1/L2/L3 to descending neurons |
 
 ## Lint and tests
 
@@ -86,7 +88,7 @@ are local-only. Graph index tests use tiny synthetic graphs.
 
 ## Status
 
-Phase 1: deterministic `root_id → index` mapping and saved sparse graph.
+Phase 2: directed reachability from visual inputs to descending neurons.
 
 ## Interpretation
 
