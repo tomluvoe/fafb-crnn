@@ -70,11 +70,17 @@ recurrent steps.
 uv run python scripts/inspect_animals10.py
 uv run python scripts/train_classifier.py --max-per-class 80   # smoke
 uv run python scripts/train_classifier.py                      # full v0
+uv run python scripts/eval_classifier.py                       # re-score saved features
 ```
 
 Default classes are butterfly / elephant / spider. On Apple silicon
 `--device auto` uses MPS. Feature extraction (frozen CRNN) is the slow
 step and prints batch progress; the linear fit after that is cheap.
+`train_classifier.py` writes `outputs/features.pt` and scores the
+**best-val** checkpoint (confusion, balanced accuracy, macro-F1,
+majority dummy). Re-run scoring without the CRNN via
+`eval_classifier.py`. An older `decoder.pt` without `features.pt`
+cannot be scored that way — train once more.
 
 ```bash
 uv run python scripts/train_classifier.py --device mps
@@ -116,6 +122,7 @@ Every inspect and preprocess step is a script; re-run them at any time.
 | `inspect_crnn.py` | 5 frozen sparse rate steps on a synthetic image |
 | `inspect_animals10.py` | local Animals-10 class counts (not in git) |
 | `train_classifier.py` | linear decoder on frozen descending activity |
+| `eval_classifier.py` | score a saved decoder on cached features |
 
 ## Lint and tests
 

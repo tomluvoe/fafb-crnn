@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 
 from models.crnn import SparseFAFBCRNN
-from models.decoder import LinearDecoder, train_linear_decoder
+from models.decoder import LinearDecoder, apply_standardize, train_linear_decoder
 from models.features import extract_descending_features
 from vision.encoder import ColumnL123Encoder
 
@@ -22,7 +22,7 @@ def test_linear_decoder_fits_separable_features() -> None:
     train_y = torch.tensor([0, 0, 1, 1, 0, 1])
     val_x = torch.tensor([[0.95, 0.05], [0.05, 0.95]])
     val_y = torch.tensor([0, 1])
-    decoder, history = train_linear_decoder(
+    result = train_linear_decoder(
         train_x,
         train_y,
         val_x,
@@ -33,9 +33,10 @@ def test_linear_decoder_fits_separable_features() -> None:
         lr=0.2,
         seed=0,
     )
-    assert history["val_acc"][-1] == 1.0
-    # Already-separable 2-D features; z-score must not break this.
-    assert decoder(val_x).argmax(1).tolist() == [0, 1]
+    assert result.history["val_acc"][-1] == 1.0
+    assert result.best_val_acc == 1.0
+    val_z = apply_standardize(val_x, result.feature_mean, result.feature_std)
+    assert result.decoder(val_z).argmax(1).tolist() == [0, 1]
 
 
 def test_crnn_has_no_decoder_parameters() -> None:
