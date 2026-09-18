@@ -71,6 +71,7 @@ uv run python scripts/inspect_animals10.py
 uv run python scripts/train_classifier.py --max-per-class 80   # smoke
 uv run python scripts/train_classifier.py                      # full v0
 uv run python scripts/eval_classifier.py                       # re-score saved features
+uv run python scripts/run_controls.py                          # Phase 6 (slow)
 ```
 
 Default classes are butterfly / elephant / spider. On Apple silicon
@@ -101,8 +102,10 @@ uv run python scripts/encode_image.py path/to/photo.jpg
 ```
 
 A number from `train_classifier.py` is this model's accuracy, not fly
-behavior. Phase 6 controls are required before claiming FAFB wiring
-did the work.
+behavior. `run_controls.py` compares that probe to pixels, shuffled
+wiring, a random sparse net, an optic-lobe-only graph, and a small
+grayscale CNN. Trainable FAFB weights are not in the default v0
+controls (3.7M edges).
 
 ## Scripts
 
@@ -123,6 +126,7 @@ Every inspect and preprocess step is a script; re-run them at any time.
 | `inspect_animals10.py` | local Animals-10 class counts (not in git) |
 | `train_classifier.py` | linear decoder on frozen descending activity |
 | `eval_classifier.py` | score a saved decoder on cached features |
+| `run_controls.py` | Phase 6: pixels, shuffle, random, optic-lobe, CNN |
 
 ## Lint and tests
 
@@ -141,8 +145,8 @@ are local-only. Graph index tests use tiny synthetic graphs.
 
 ## Status
 
-Roadmap is GitHub issues. Next is
-[Phase 6: controls](https://github.com/tomluvoe/fafb-crnn/issues/11).
+Roadmap is GitHub issues. Phase 6 controls:
+[run_controls.py](https://github.com/tomluvoe/fafb-crnn/issues/11).
 
 ## Interpretation
 

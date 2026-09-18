@@ -50,3 +50,39 @@ def extract_descending_features(
                 flush=True,
             )
     return torch.cat(features, dim=0), torch.cat(labels, dim=0).long()
+
+
+@torch.no_grad()
+def extract_visual_features(
+    loader: DataLoader,
+    encoder: ColumnL123Encoder,
+    device: torch.device | str | None = None,
+    *,
+    progress: bool = False,
+    desc: str = "visual",
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """L1/L2/L3 encoder samples only. No CRNN."""
+    if device is not None:
+        encoder.to(device)
+    features: list[torch.Tensor] = []
+    labels: list[torch.Tensor] = []
+    n_batches = len(loader)
+    seen = 0
+    start = time.perf_counter()
+    for i, (images, batch_labels) in enumerate(loader, start=1):
+        if device is not None:
+            images = images.to(device)
+        features.append(encoder.encode(images).cpu())
+        labels.append(
+            batch_labels.cpu()
+            if isinstance(batch_labels, torch.Tensor)
+            else torch.as_tensor(batch_labels)
+        )
+        seen += int(images.shape[0])
+        if progress and (i == 1 or i == n_batches or i % 10 == 0):
+            elapsed = time.perf_counter() - start
+            print(
+                f"{desc}: batch {i}/{n_batches}  images {seen}  {elapsed:.1f}s",
+                flush=True,
+            )
+    return torch.cat(features, dim=0), torch.cat(labels, dim=0).long()
