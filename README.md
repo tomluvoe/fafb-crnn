@@ -43,28 +43,64 @@ Raw FlyWire tables live in `data/fafb/raw/` and are not committed:
 - `visual_neuron_types.csv.gz` — visual-neuron annotations
 - `column_assignment.csv.gz` — retinotopic visual columns
 
-## Scripts
+## How to run
 
-Raw FlyWire tables go in `data/fafb/raw/` (not in git). Every inspect
-and preprocess step is a script; re-run them at any time. `build_graph.py` writes the graph; `inspect_reachability.py` writes hop
-maps beside it.
+Always use `uv run` (not system `python3`). The first call creates
+`.venv` and installs this package.
+
+**Local data (not in git)**
+
+- FlyWire tables: `data/fafb/raw/`
+- Animals-10: unzip into `data/animals10/raw-img/` (Italian class folders)
+- Training writes `outputs/` (gitignored)
+
+**One-time graph** (skip if `data/fafb/processed/` already exists)
+
+```bash
+uv run python scripts/build_graph.py
+uv run python scripts/inspect_reachability.py
+```
+
+`build_graph.py` is the only graph writer. Reachability confirms 5
+recurrent steps.
+
+**The experiment** (CRNN and decoder are already defined)
+
+```bash
+uv run python scripts/inspect_animals10.py
+uv run python scripts/train_classifier.py --max-per-class 80   # smoke
+uv run python scripts/train_classifier.py                      # full v0
+```
+
+Default classes are butterfly / elephant / spider. On Apple silicon
+`--device auto` uses MPS. Feature extraction (frozen CRNN) is the slow
+step and prints batch progress; the linear fit after that is cheap.
+
+```bash
+uv run python scripts/train_classifier.py --device mps
+uv run python scripts/train_classifier.py --classes cat dog
+```
+
+**Optional inspect** (read-only; not required to train)
 
 ```bash
 uv run python scripts/inspect_fafb.py
 uv run python scripts/inspect_visual_system.py
 uv run python scripts/inspect_descending.py
-uv run python scripts/inspect_connections.py
-uv run python scripts/build_graph.py
+uv run python scripts/inspect_connections.py   # slow: 5.3M-row CSV
 uv run python scripts/inspect_graph.py
-uv run python scripts/inspect_reachability.py
 uv run python scripts/inspect_encoder.py
 uv run python scripts/inspect_crnn.py
-uv run python scripts/inspect_animals10.py
-uv run python scripts/train_classifier.py
+uv run python scripts/encode_image.py path/to/photo.jpg
 ```
 
-`uv run` creates `.venv` and installs this package if needed. System
-`python3` does not see `src/`.
+A number from `train_classifier.py` is this model's accuracy, not fly
+behavior. Phase 6 controls are required before claiming FAFB wiring
+did the work.
+
+## Scripts
+
+Every inspect and preprocess step is a script; re-run them at any time.
 
 | script | what it does |
 |---|---|

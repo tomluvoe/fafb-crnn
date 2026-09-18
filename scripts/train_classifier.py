@@ -84,11 +84,16 @@ def main() -> None:
         train_set, batch_size=args.extract_batch_size, shuffle=False
     )
     val_loader = DataLoader(val_set, batch_size=args.extract_batch_size, shuffle=False)
-    print("Extracting descending features (frozen CRNN)...")
-    train_x, train_y = extract_descending_features(
-        train_loader, encoder, crnn, device=device
+    print(
+        "Extracting descending features (frozen CRNN). "
+        "This is the slow step; the linear fit after it is cheap."
     )
-    val_x, val_y = extract_descending_features(val_loader, encoder, crnn, device=device)
+    train_x, train_y = extract_descending_features(
+        train_loader, encoder, crnn, device=device, progress=True, desc="train"
+    )
+    val_x, val_y = extract_descending_features(
+        val_loader, encoder, crnn, device=device, progress=True, desc="val"
+    )
     print(
         f"Features: train {tuple(train_x.shape)} val {tuple(val_x.shape)} "
         f"n_descending={train_x.shape[1]}"
