@@ -75,7 +75,8 @@ uv run python scripts/inspect_reachability.py
 ## Lint and tests
 
 PRs run [Ruff](https://docs.astral.sh/ruff/) and pytest in GitHub
-Actions. Locally:
+Actions. Lint uses `ruff-action` (no project env, no PyTorch). Tests
+install CPU torch, not the Linux CUDA build. Locally:
 
 ```bash
 uv run ruff check src scripts tests
