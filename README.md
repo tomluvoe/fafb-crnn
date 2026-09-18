@@ -57,6 +57,7 @@ uv run python scripts/inspect_connections.py
 uv run python scripts/build_graph.py
 uv run python scripts/inspect_graph.py
 uv run python scripts/inspect_reachability.py
+uv run python scripts/inspect_encoder.py
 ```
 
 `uv run` creates `.venv` and installs this package if needed. System
@@ -71,6 +72,8 @@ uv run python scripts/inspect_reachability.py
 | `build_graph.py` | writes `data/fafb/processed/` (deterministic) |
 | `inspect_graph.py` | checks the processed artifacts without re-parsing CSV |
 | `inspect_reachability.py` | hops from L1/L2/L3 to descending neurons |
+| `inspect_encoder.py` | sample a synthetic image onto L1/L2/L3 |
+| `encode_image.py` | sample a photo onto L1/L2/L3 (`--delta spatial\|gray`) |
 
 ## Lint and tests
 
@@ -89,8 +92,8 @@ are local-only. Graph index tests use tiny synthetic graphs.
 
 ## Status
 
-Roadmap is GitHub issues. Phases 0–2 are done. Next is
-[Phase 3: visual encoder](https://github.com/tomluvoe/fafb-crnn/issues/8).
+Roadmap is GitHub issues. Next is
+[Phase 4: sparse CRNN](https://github.com/tomluvoe/fafb-crnn/issues/9).
 
 ## Interpretation
 
