@@ -72,6 +72,7 @@ uv run python scripts/train_classifier.py --max-per-class 80   # smoke
 uv run python scripts/train_classifier.py                      # full v0
 uv run python scripts/eval_classifier.py                       # re-score saved features
 uv run python scripts/run_controls.py                          # Phase 6 (slow)
+uv run python scripts/sweep_steps.py                           # 5 vs 10 vs 20 steps
 ```
 
 Default classes are butterfly / elephant / spider. On Apple silicon
@@ -127,6 +128,7 @@ Every inspect and preprocess step is a script; re-run them at any time.
 | `train_classifier.py` | linear decoder on frozen descending activity |
 | `eval_classifier.py` | score a saved decoder on cached features |
 | `run_controls.py` | Phase 6: pixels, shuffle, random, optic-lobe, CNN |
+| `sweep_steps.py` | frozen FAFB at 5 / 10 / 20 recurrent steps |
 
 ## Lint and tests
 
